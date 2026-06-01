@@ -82,8 +82,6 @@ Route::get('/register', [AuthController::class, 'showRegister'])->name('register
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
- 
- 
 Route::get('/forgot-password', [PasswordResetController::class, 'showForgotForm'])->name('forgot-password.show');
 Route::post('/forgot-password', [PasswordResetController::class, 'requestOtp'])->name('forgot-password.request');
 Route::post('/verify-otp', [PasswordResetController::class, 'verifyOtp'])->name('forgot-password.verify');
@@ -124,7 +122,9 @@ Route::post('/contact', [ContactController::class, 'store'])->name('contact.subm
 // PUBLIC USER PAGES (dynamic username routes)
 // ===============================
 
-Route::prefix('{username}')->group(function () {
+Route::prefix('{username}')
+    ->where(['username' => '^(?!login$|register$|dashboard$|admin$|business$|contact$|about-us$|services$|projects$|media$|bank-detail$|forgot-password$|reset-password$|verify-otp$)[A-Za-z0-9_-]+$'])
+    ->group(function () {
     Route::get('/', [UserController::class, 'showByUsername'])->name('user.profile');
     Route::get('/about-us', [UserController::class, 'showAbout'])->name('user.about');
     Route::get('/services', [UserController::class, 'showServices'])->name('user.services');
