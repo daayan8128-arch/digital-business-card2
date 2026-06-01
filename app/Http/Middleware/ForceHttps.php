@@ -10,34 +10,38 @@ use Symfony\Component\HttpFoundation\Response;
 class ForceHttps
 {
     /**
-     * Handle an incoming request - runs BEFORE rendering views
+     * Handle an incoming request.
+     *
+     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // In production, force HTTPS URLs before views are rendered
-        if (app()->environment('production')) {
-            // Get the HTTPS version of the current app URL
-            $appUrl = env('APP_URL', 'https://' . $request->getHost());
-            
-            // Ensure it's HTTPS
-            $appUrl = str_replace('http://', 'https://', $appUrl);
-            
-            // Force the URL scheme and root before rendering
+        // Force HTTPS scheme early
+        if (app()->environment('production') || $request->header('X-Forwarded-Proto') === 'https') {
             URL::forceScheme('https');
-            URL::forceRootUrl($appUrl);
-            
-            \Log::info('ForceHttps middleware: Set URLs', [
-                'app_url' => $appUrl,
-                'scheme' => 'https'
-            ]);
+            \Illuminate\Support\Facades\URL::forceRootUrl('https://' . $request->getHost());
         }
 
-        return $next($request);
-    }
-}
+        $response = $next($request);
 
+        // Replace HTTP with HTTPS in HTML response content
+        if ($response instanceof \Illuminate\Http\Response || $response instanceof \Illuminate\Http\JsonResponse) {
+            if (strpos($response->headers->get('Content-Type', ''), 'text/html') !== false) {
+                $content = $response->getContent();
+                
+                // Simple regex to replace http:// with https:// for our domain only
+                if (strpos($content, 'http://digital-business-card-production-a484.up.railway.app') !== false) {
+                    $content = str_replace(
+                        'http://digital-business-card-production-a484.up.railway.app',
+                        'https://digital-business-card-production-a484.up.railway.app',
+                        $content
+                    );
+                    $response->setContent($content);
+                }
+            }
+        }
 
-
+        return $response;
     }
 }
 
