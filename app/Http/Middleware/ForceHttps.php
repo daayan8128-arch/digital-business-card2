@@ -16,10 +16,18 @@ class ForceHttps
         $response = $next($request);
 
         // In production, replace HTTP URLs with HTTPS in the response
+        \Log::info('ForceHttps: Checking response', [
+            'environment' => app()->environment(),
+            'content_type' => $response->headers->get('Content-Type'),
+            'is_html' => $this->isHtmlResponse($response)
+        ]);
+        
         if (app()->environment('production') && $this->isHtmlResponse($response)) {
             $content = $response->getContent();
             
             if (is_string($content) && strpos($content, 'http://') !== false) {
+                \Log::info('ForceHttps: Found HTTP URLs, rewriting...');
+                
                 // Replace all HTTP URLs with HTTPS for our domain
                 $content = preg_replace(
                     '/href=["\']http:\/\/digital-business-card-production-a484\.up\.railway\.app\//i',
@@ -34,6 +42,7 @@ class ForceHttps
                 );
                 
                 $response->setContent($content);
+                \Log::info('ForceHttps: Rewrite complete');
             }
         }
 
