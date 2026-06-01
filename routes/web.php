@@ -31,13 +31,7 @@ use App\Models\{
 Route::get('/about-us', function () {
     return view('sample.about-us');
 });
-Route::get('/login', function () {
-    return 'LOGIN ROUTE WORKING';
-});
 
-Route::get('/register', function () {
-    return 'REGISTER ROUTE WORKING';
-});
 Route::get('/projects', function () {
     return view('sample.projects');
 });
