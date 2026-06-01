@@ -15,6 +15,9 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Middleware\TrustProxies::HEADERS_X_FORWARDED_FOR |
             \Illuminate\Http\Middleware\TrustProxies::HEADERS_X_FORWARDED_HOST |
             \Illuminate\Http\Middleware\TrustProxies::HEADERS_X_FORWARDED_PROTO);
+        
+        // Add our custom HTTPS enforcement middleware
+        $middleware->prepend(\App\Http\Middleware\ForceHttps::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
