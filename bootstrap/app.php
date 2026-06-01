@@ -11,13 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Trust proxies for Railway deployment - trust all proxies from all hosts
+        // Trust proxies for Railway deployment to properly detect HTTPS
         $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Middleware\TrustProxies::HEADERS_X_FORWARDED_FOR |
             \Illuminate\Http\Middleware\TrustProxies::HEADERS_X_FORWARDED_HOST |
             \Illuminate\Http\Middleware\TrustProxies::HEADERS_X_FORWARDED_PROTO);
-        
-        // Add our custom HTTPS enforcement middleware to run after other middleware
-        $middleware->append(\App\Http\Middleware\ForceHttps::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

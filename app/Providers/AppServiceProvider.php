@@ -15,10 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        // Force HTTPS scheme in production
-        if ($this->app->environment('production')) {
-            URL::forceScheme('https');
-        }
+        //
     }
 
     /**
@@ -26,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS URLs in production after all middleware has run
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         View::addNamespace('namespace', resource_path('views'));
 
         // Yaha observer ko register karo
