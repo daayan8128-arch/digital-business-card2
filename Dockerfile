@@ -14,6 +14,11 @@ WORKDIR /app
 
 COPY . .
 
+RUN apt-get update && apt-get install -y nodejs npm
+
+RUN npm install
+RUN npm run build
+
 RUN composer install --no-dev --optimize-autoloader
 
 RUN mkdir -p storage/framework/{sessions,views,cache} bootstrap/cache \
