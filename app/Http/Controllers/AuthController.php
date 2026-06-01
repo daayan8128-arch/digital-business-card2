@@ -15,10 +15,10 @@ class AuthController extends Controller
         return view('welcome');
     }
 // 
-    // public function showLogin()
-    // {
-    //     return view('auth.login');
-    // }
+    public function showLogin()
+    {
+        return view('auth.login');
+    }
 
    public function login(Request $request)
 {
