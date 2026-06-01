@@ -5,49 +5,40 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Config;
 use Symfony\Component\HttpFoundation\Response;
 
 class ForceHttps
 {
     /**
      * Handle an incoming request.
-     *
-     * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Force HTTPS scheme early
-        if (app()->environment('production') || $request->header('X-Forwarded-Proto') === 'https') {
-            URL::forceScheme('https');
-            \Illuminate\Support\Facades\URL::forceRootUrl('https://' . $request->getHost());
-        }
-
-        $response = $next($request);
-
-        // Try to modify the response content to replace HTTP with HTTPS
-        try {
-            // Check if this is a view response with content
-            if (method_exists($response, 'getContent')) {
-                $content = $response->getContent();
-                
-                if ($content && is_string($content) && strpos($content, 'http://digital-business-card-production-a484.up.railway.app') !== false) {
-                    // Replace all occurrences
-                    $newContent = str_replace(
-                        'http://digital-business-card-production-a484.up.railway.app',
-                        'https://digital-business-card-production-a484.up.railway.app',
-                        $content
-                    );
-                    
-                    if ($newContent !== $content) {
-                        $response->setContent($newContent);
-                    }
+        if (app()->environment('production')) {
+            // Get APP_URL from environment  
+            $appUrl = env('APP_URL');
+            
+            if ($appUrl) {
+                // Ensure HTTPS
+                if (strpos($appUrl, 'http://') === 0) {
+                    $appUrl = str_replace('http://', 'https://', $appUrl);
                 }
+            } else {
+                // Fallback to constructing from request
+                $appUrl = 'https://' . $request->getHost();
             }
-        } catch (\Exception $e) {
-            // Silently fail if something goes wrong
+            
+            // Set configuration and force URLs
+            Config::set('app.url', $appUrl);
+            URL::forceRootUrl($appUrl);
+            URL::forceScheme('https');
         }
 
-        return $response;
+        return $next($request);
+    }
+}
+
     }
 }
 
