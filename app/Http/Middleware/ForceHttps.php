@@ -24,21 +24,27 @@ class ForceHttps
 
         $response = $next($request);
 
-        // Replace HTTP with HTTPS in HTML response content
-        if ($response instanceof \Illuminate\Http\Response || $response instanceof \Illuminate\Http\JsonResponse) {
-            if (strpos($response->headers->get('Content-Type', ''), 'text/html') !== false) {
+        // Try to modify the response content to replace HTTP with HTTPS
+        try {
+            // Check if this is a view response with content
+            if (method_exists($response, 'getContent')) {
                 $content = $response->getContent();
                 
-                // Simple regex to replace http:// with https:// for our domain only
-                if (strpos($content, 'http://digital-business-card-production-a484.up.railway.app') !== false) {
-                    $content = str_replace(
+                if ($content && is_string($content) && strpos($content, 'http://digital-business-card-production-a484.up.railway.app') !== false) {
+                    // Replace all occurrences
+                    $newContent = str_replace(
                         'http://digital-business-card-production-a484.up.railway.app',
                         'https://digital-business-card-production-a484.up.railway.app',
                         $content
                     );
-                    $response->setContent($content);
+                    
+                    if ($newContent !== $content) {
+                        $response->setContent($newContent);
+                    }
                 }
             }
+        } catch (\Exception $e) {
+            // Silently fail if something goes wrong
         }
 
         return $response;
