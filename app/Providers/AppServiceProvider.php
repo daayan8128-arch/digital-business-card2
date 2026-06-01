@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\URL;
 use App\Models\User;
 use App\Observers\UserObserver;
 
@@ -22,6 +23,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Force HTTPS in production (Railway uses HTTPS)
+        if (app()->environment('production')) {
+            URL::forceScheme('https');
+        }
+
         View::addNamespace('namespace', resource_path('views'));
 
         // Yaha observer ko register karo

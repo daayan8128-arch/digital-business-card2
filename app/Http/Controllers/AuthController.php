@@ -15,10 +15,10 @@ class AuthController extends Controller
         return view('welcome');
     }
 // 
-    public function showLogin()
-    {
-        return view('auth.login');
-    }
+//     public function showLogin()
+//     {
+//         return view('auth.login');
+//     }
 
    public function login(Request $request)
 {
@@ -65,12 +65,10 @@ class AuthController extends Controller
 
         $user = User::create([
             'name' => $request->name,
-            'username' => $request->username,
+            'username' => $request->username,   
             'company_name' => $request->company_name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'user',
-            'access' => 'unblock',
         ]);
 
         Auth::login($user);
