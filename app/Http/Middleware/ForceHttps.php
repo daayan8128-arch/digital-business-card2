@@ -4,8 +4,6 @@ namespace App\Http\Middleware;
 
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\URL;
-use Illuminate\Support\Facades\Config;
 use Symfony\Component\HttpFoundation\Response;
 
 class ForceHttps
@@ -15,29 +13,43 @@ class ForceHttps
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (app()->environment('production')) {
-            // Get APP_URL from environment  
-            $appUrl = env('APP_URL');
+        $response = $next($request);
+
+        // In production, replace HTTP URLs with HTTPS in the response
+        if (app()->environment('production') && $this->isHtmlResponse($response)) {
+            $content = $response->getContent();
             
-            if ($appUrl) {
-                // Ensure HTTPS
-                if (strpos($appUrl, 'http://') === 0) {
-                    $appUrl = str_replace('http://', 'https://', $appUrl);
-                }
-            } else {
-                // Fallback to constructing from request
-                $appUrl = 'https://' . $request->getHost();
+            if (is_string($content) && strpos($content, 'http://') !== false) {
+                // Replace all HTTP URLs with HTTPS for our domain
+                $content = preg_replace(
+                    '/href=["\']http:\/\/digital-business-card-production-a484\.up\.railway\.app\//i',
+                    'href="https://digital-business-card-production-a484.up.railway.app/',
+                    $content
+                );
+                
+                $content = preg_replace(
+                    '/src=["\']http:\/\/digital-business-card-production-a484\.up\.railway\.app\//i',
+                    'src="https://digital-business-card-production-a484.up.railway.app/',
+                    $content
+                );
+                
+                $response->setContent($content);
             }
-            
-            // Set configuration and force URLs
-            Config::set('app.url', $appUrl);
-            URL::forceRootUrl($appUrl);
-            URL::forceScheme('https');
         }
 
-        return $next($request);
+        return $response;
+    }
+
+    /**
+     * Check if the response is HTML
+     */
+    private function isHtmlResponse(Response $response): bool
+    {
+        $contentType = $response->headers->get('Content-Type', '');
+        return strpos($contentType, 'text/html') !== false;
     }
 }
+
 
     }
 }
