@@ -1,5 +1,4 @@
 node_modules
-vendor
 .env
 .env.*
 storage
@@ -11,4 +10,4 @@ yarn-error.log*
 .DS_Store
 .vscode
 .idea
-tests
+tests   
