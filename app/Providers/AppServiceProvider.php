@@ -26,9 +26,17 @@ class AppServiceProvider extends ServiceProvider
     {
         // Force HTTPS in production
         if (app()->environment('production')) {
-            // Set the app URL to use HTTPS
-            $host = request()->getHost();
-            $appUrl = 'https://' . $host;
+            // Get APP_URL from environment or construct it
+            $appUrl = env('APP_URL');
+            if (!$appUrl) {
+                // If not set, construct from request
+                $appUrl = 'https://' . (request()->getHost() ?? 'digital-business-card-production-a484.up.railway.app');
+            } else if (strpos($appUrl, 'http://') === 0) {
+                // Replace http with https
+                $appUrl = 'https://' . substr($appUrl, 7);
+            }
+            
+            // Force the URL configuration
             Config::set('app.url', $appUrl);
             URL::forceRootUrl($appUrl);
             URL::forceScheme('https');
