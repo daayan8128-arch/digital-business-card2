@@ -11,8 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        // Trust proxies for Railway deployment
-        $middleware->trustProxies(at: '*');
+        // Trust proxies for Railway deployment - trust all proxies from all hosts
+        $middleware->trustProxies(at: '*', headers: \Illuminate\Http\Middleware\TrustProxies::HEADERS_X_FORWARDED_FOR |
+            \Illuminate\Http\Middleware\TrustProxies::HEADERS_X_FORWARDED_HOST |
+            \Illuminate\Http\Middleware\TrustProxies::HEADERS_X_FORWARDED_PROTO);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

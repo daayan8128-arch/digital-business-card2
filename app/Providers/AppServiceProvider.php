@@ -23,8 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Force HTTPS in production (Railway uses HTTPS)
-        if (app()->environment('production')) {
+        // Force HTTPS in production (Railway uses HTTPS with reverse proxy)
+        if (app()->environment('production') || request()->header('X-Forwarded-Proto') === 'https') {
             URL::forceScheme('https');
         }
 
